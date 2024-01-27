@@ -1,6 +1,7 @@
 from src import app
 from flask import request, jsonify
 from .models import User, Expense, Category
+from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
 BASE_URL = "/api/v1"
@@ -17,14 +18,16 @@ def create_user():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-
+    print(data)
     if (
         User.query.filter_by(username=username).first()
         or User.query.filter_by(email=email).first()
     ):
         return jsonify({"message": "Username or email already exists"}), 400
 
-    new_user = User(username=username, email=email, password_hash=password)
+    new_user = User(
+        username=username, email=email, password_hash=generate_password_hash(password)
+    )
     db.session.add(new_user)
     db.session.commit()
 
