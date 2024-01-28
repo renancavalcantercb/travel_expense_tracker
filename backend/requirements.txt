@@ -1,6 +1,6 @@
 Flask
-python - dotenv
-Flask - Cors
+python-dotenv
+Flask-Cors
 gunicorn
 flask_sqlalchemy
-psycopg2 - binary
+psycopg2-binary
