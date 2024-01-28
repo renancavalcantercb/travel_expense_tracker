@@ -37,6 +37,17 @@ def create_user():
     )
 
 
+@app.route(f"{BASE_URL}/users/login", methods=["POST"])
+def login_user():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"message": "Invalid username or password"}), 401
+    return jsonify({"message": "Login successful", "user": user.to_dict()}), 200
+
+
 @app.route(f"{BASE_URL}/expenses/<int:user_id>", methods=["GET"])
 def get_expenses(user_id):
     expenses = Expense.query.filter_by(user_id=user_id).all()
@@ -74,8 +85,8 @@ def create_expense(user_id):
     )
 
 
-@app.route(f"{BASE_URL}/categories/<int:user_id>", methods=["POST"])
-def create_category(user_id):
+@app.route(f"{BASE_URL}/categories/create", methods=["POST"])
+def create_category():
     data = request.get_json()
     name = data.get("name")
     if Category.query.filter_by(name=name).first():
