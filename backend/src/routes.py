@@ -56,7 +56,7 @@ def get_expenses(user_id):
     return jsonify({"message": "No expenses found.", "status": 404}), 404
 
 
-@app.route(f"{BASE_URL}/expenses/<int:user_id>", methods=["POST"])
+@app.route(f"{BASE_URL}/expenses/create/<int:user_id>", methods=["POST"])
 def create_expense(user_id):
     data = request.get_json()
     category = Category.query.filter_by(name=data.get("category")).first()
@@ -85,6 +85,38 @@ def create_expense(user_id):
     )
 
 
+@app.route(f"{BASE_URL}/expenses/edit/<int:expense_id>", methods=["PUT"])
+def update_expense(expense_id):
+    data = request.get_json()
+    expense = Expense.query.filter_by(id=expense_id).first()
+    if not expense:
+        return jsonify({"message": "Expense not found"}), 404
+    expense.date = data.get("date")
+    expense.amount = data.get("amount")
+    expense.currency = data.get("currency")
+    expense.description = data.get("description")
+    db.session.commit()
+    return (
+        jsonify(
+            {
+                "message": "Expense updated successfully",
+                "expense": expense.to_dict(),
+            }
+        ),
+        200,
+    )
+
+
+@app.route(f"{BASE_URL}/expenses/delete/<int:expense_id>", methods=["DELETE"])
+def delete_expense(expense_id):
+    expense = Expense.query.filter_by(id=expense_id).first()
+    if not expense:
+        return jsonify({"message": "Expense not found"}), 404
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({"message": "Expense deleted successfully"}), 200
+
+
 @app.route(f"{BASE_URL}/categories/create", methods=["POST"])
 def create_category():
     data = request.get_json()
@@ -102,4 +134,41 @@ def create_category():
             }
         ),
         201,
+    )
+
+
+@app.route(f"{BASE_URL}/categories/<int:user_id>", methods=["GET"])
+def get_categories(user_id):
+    categories = Category.query.all()
+    if categories:
+        return jsonify([category.to_dict() for category in categories]), 200
+    return jsonify({"message": "No categories found.", "status": 404}), 404
+
+
+@app.route(f"{BASE_URL}/categories/delete/<int:category_id>", methods=["DELETE"])
+def delete_category(category_id):
+    category = Category.query.filter_by(id=category_id).first()
+    if not category:
+        return jsonify({"message": "Category not found"}), 404
+    db.session.delete(category)
+    db.session.commit()
+    return jsonify({"message": "Category deleted successfully"}), 200
+
+
+@app.route(f"{BASE_URL}/categories/edit/<int:category_id>", methods=["PUT"])
+def update_category(category_id):
+    data = request.get_json()
+    category = Category.query.filter_by(id=category_id).first()
+    if not category:
+        return jsonify({"message": "Category not found"}), 404
+    category.name = data.get("name")
+    db.session.commit()
+    return (
+        jsonify(
+            {
+                "message": "Category updated successfully",
+                "category": category.to_dict(),
+            }
+        ),
+        200,
     )
