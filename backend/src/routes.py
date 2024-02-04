@@ -1,8 +1,11 @@
+import jwt
 from src import app
 from flask import request, jsonify
 from .models import User, Expense, Category
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db
+from datetime import datetime, timedelta
+from . import db, redis_client
+from .decorators.token_decorator import token_required
 
 BASE_URL = "/api/v1"
 
@@ -42,13 +45,28 @@ def login_user():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+
     user = User.query.filter_by(username=username).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"message": "Invalid username or password"}), 401
-    return jsonify({"message": "Login successful", "user": user.to_dict()}), 200
+
+    token_data = {
+        "user_id": user.id,
+        "username": user.username,
+        "exp": datetime.utcnow() + timedelta(hours=1),
+    }
+    token = jwt.encode(token_data, app.config["SECRET_KEY"], algorithm="HS256")
+
+    redis_key = f"token:{token}"
+    redis_value = {"user_id": str(user.id), "exp": str(token_data["exp"].timestamp())}
+    redis_client.hmset(redis_key, redis_value)
+    redis_client.expireat(redis_key, int(token_data["exp"].timestamp()))
+
+    return jsonify({"message": "Login successful", "token": token}), 200
 
 
 @app.route(f"{BASE_URL}/expenses/<int:user_id>", methods=["GET"])
+@token_required
 def get_expenses(user_id):
     expenses = Expense.query.filter_by(user_id=user_id).all()
     if expenses:
@@ -57,6 +75,7 @@ def get_expenses(user_id):
 
 
 @app.route(f"{BASE_URL}/expenses/create/<int:user_id>", methods=["POST"])
+@token_required
 def create_expense(user_id):
     data = request.get_json()
     category = Category.query.filter_by(name=data.get("category")).first()
@@ -86,6 +105,7 @@ def create_expense(user_id):
 
 
 @app.route(f"{BASE_URL}/expenses/edit/<int:expense_id>", methods=["PUT"])
+@token_required
 def update_expense(expense_id):
     data = request.get_json()
     expense = Expense.query.filter_by(id=expense_id).first()
@@ -108,6 +128,7 @@ def update_expense(expense_id):
 
 
 @app.route(f"{BASE_URL}/expenses/delete/<int:expense_id>", methods=["DELETE"])
+@token_required
 def delete_expense(expense_id):
     expense = Expense.query.filter_by(id=expense_id).first()
     if not expense:
@@ -117,58 +138,10 @@ def delete_expense(expense_id):
     return jsonify({"message": "Expense deleted successfully"}), 200
 
 
-@app.route(f"{BASE_URL}/categories/create", methods=["POST"])
-def create_category():
-    data = request.get_json()
-    name = data.get("name")
-    if Category.query.filter_by(name=name).first():
-        return jsonify({"message": "Category already exists"}), 400
-    new_category = Category(name=name)
-    db.session.add(new_category)
-    db.session.commit()
-    return (
-        jsonify(
-            {
-                "message": "Category created successfully",
-                "category": new_category.to_dict(),
-            }
-        ),
-        201,
-    )
-
-
-@app.route(f"{BASE_URL}/categories/<int:user_id>", methods=["GET"])
-def get_categories(user_id):
+@app.route(f"{BASE_URL}/categories", methods=["GET"])
+@token_required
+def get_categories():
     categories = Category.query.all()
     if categories:
         return jsonify([category.to_dict() for category in categories]), 200
     return jsonify({"message": "No categories found.", "status": 404}), 404
-
-
-@app.route(f"{BASE_URL}/categories/delete/<int:category_id>", methods=["DELETE"])
-def delete_category(category_id):
-    category = Category.query.filter_by(id=category_id).first()
-    if not category:
-        return jsonify({"message": "Category not found"}), 404
-    db.session.delete(category)
-    db.session.commit()
-    return jsonify({"message": "Category deleted successfully"}), 200
-
-
-@app.route(f"{BASE_URL}/categories/edit/<int:category_id>", methods=["PUT"])
-def update_category(category_id):
-    data = request.get_json()
-    category = Category.query.filter_by(id=category_id).first()
-    if not category:
-        return jsonify({"message": "Category not found"}), 404
-    category.name = data.get("name")
-    db.session.commit()
-    return (
-        jsonify(
-            {
-                "message": "Category updated successfully",
-                "category": category.to_dict(),
-            }
-        ),
-        200,
-    )
