@@ -4,3 +4,5 @@ Flask-Cors
 gunicorn
 flask_sqlalchemy
 psycopg2-binary
+PyJWT
+redis
