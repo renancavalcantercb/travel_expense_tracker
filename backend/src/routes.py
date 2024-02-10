@@ -49,6 +49,12 @@ def login_user():
     user = User.query.filter_by(username=username).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"message": "Invalid username or password"}), 401
+    
+    user_data = {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+    }
 
     token_data = {
         "user_id": user.id,
@@ -62,7 +68,7 @@ def login_user():
     redis_client.hmset(redis_key, redis_value)
     redis_client.expireat(redis_key, int(token_data["exp"].timestamp()))
 
-    return jsonify({"message": "Login successful", "token": token}), 200
+    return jsonify({"message": "Login successful", "token": token, "user_data": user_data}), 200
 
 
 @app.route(f"{BASE_URL}/expenses/<int:user_id>", methods=["GET"])
