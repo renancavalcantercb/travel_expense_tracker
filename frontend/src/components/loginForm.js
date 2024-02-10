@@ -31,8 +31,9 @@ export default function Login() {
                 body: JSON.stringify(values),
             });
             const data = await response.json();
-            if (response.status === 200) {
-                localStorage.setItem("userId", data.user.id);
+            if (response.status === 200) {                
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("userDetails", JSON.stringify(data.user_data));
                 navigate("/");
                 toast.success(data.message);
             } else {
@@ -80,7 +81,7 @@ export default function Login() {
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" className="login-form-button">
+                    <Button type="primary" htmlType="submit" className="login-form-button" style={{marginRight: '10px'}}>
                         Login
                     </Button>
                     Or <Link to="/register">register now!</Link>
