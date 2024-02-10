@@ -12,12 +12,20 @@ const ExpensesTable = () => {
 
     const fetchExpenses = async () => {
         try {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
+            const token = localStorage.getItem('token');
+            if (!token) {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`http://127.0.0.1:5000/api/v1/expenses/${userId}`);
+            const userDetails = JSON.parse(localStorage.getItem('userDetails'));
+            const userId =  userDetails.id;
+            const response = await fetch(`http://127.0.0.1:5000/api/v1/expenses/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
             if (!response.ok) {
                 throw new Error(`Error: ${response.status}`);
