@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Modal, Form, DatePicker, InputNumber, Input } from 'antd';
+import useAuth from '../hooks/useAuth';
 
 const ExpensesTable = () => {
+    useAuth();
+
     const [expenses, setExpenses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -13,10 +16,6 @@ const ExpensesTable = () => {
     const fetchExpenses = async () => {
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
             const userDetails = JSON.parse(localStorage.getItem('userDetails'));
             const userId =  userDetails.id;
             const response = await fetch(`http://127.0.0.1:5000/api/v1/expenses/${userId}`, {
