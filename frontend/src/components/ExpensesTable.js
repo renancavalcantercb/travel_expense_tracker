@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Modal, Form, DatePicker, InputNumber, Input } from 'antd';
+import { Table, Button, Modal, Form, DatePicker, InputNumber, Input, Select } from 'antd';
 import useAuth from '../hooks/useAuth';
 
 const ExpensesTable = () => {
@@ -149,7 +149,7 @@ const ExpensesTable = () => {
             </div>
             <Table dataSource={expenses} columns={columns} rowKey="id" loading={isLoading} />
 
-            <Modal title="Add Expense" visible={isModalVisible} onCancel={handleCancel} footer={null}>
+            <Modal title="Add Expense" open={isModalVisible} onCancel={handleCancel} footer={null}>
                 <Form onFinish={handleSubmit}>
                     <Form.Item name="date" label="Date">
                         <DatePicker />
@@ -158,7 +158,14 @@ const ExpensesTable = () => {
                         <InputNumber />
                     </Form.Item>
                     <Form.Item name="currency" label="Currency">
-                        <Input />
+                        <Select
+                            placeholder="Select a currency"
+                            allowClear
+                        >
+                            <Select.Option value="USD">BRL</Select.Option>
+                            <Select.Option value="EUR">EUR</Select.Option>
+                            <Select.Option value="BRL">GBP</Select.Option>
+                        </Select>
                     </Form.Item>
                     <Form.Item name="description" label="Description">
                         <Input />
@@ -174,7 +181,7 @@ const ExpensesTable = () => {
 
             <Modal
                 title="Confirm Delete"
-                visible={isDeleteModalVisible}
+                open={isDeleteModalVisible}
                 onOk={handleDeleteConfirm}
                 onCancel={handleCancel}
                 okText="Delete"
