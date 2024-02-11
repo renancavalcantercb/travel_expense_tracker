@@ -35,7 +35,6 @@ export default function Login() {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userDetails", JSON.stringify(data.user_data));
                 navigate("/");
-                toast.success(data.message);
             } else {
                 toast.warning(data.message);
             }
