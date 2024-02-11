@@ -27,7 +27,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - my_dbdata:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
   frontend:
     build: ./frontend
@@ -52,5 +52,5 @@ services:
       - "80:80"
 
 volumes:
-  my_dbdata:
+  db_data:
   redis_data:
