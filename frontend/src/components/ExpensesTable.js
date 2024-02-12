@@ -161,6 +161,7 @@ const ExpensesTable = () => {
                         <Select
                             placeholder="Select a currency"
                             allowClear
+                            style={{ width: '50%' }}
                         >
                             <Select.Option value="USD">BRL</Select.Option>
                             <Select.Option value="EUR">EUR</Select.Option>
