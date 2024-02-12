@@ -45,13 +45,14 @@ export default function Login() {
     };
 
     return (
-        <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ height: '75vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Form
                 form={form}
                 name="login"
                 className="login-form"
                 initialValues={{ remember: true }}
                 onFinish={handleFormSubmit}
+                layout="vertical"
                 style={{
                     maxWidth: '300px',
                     border: '1px solid #d9d9d9',
