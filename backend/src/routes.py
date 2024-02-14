@@ -1,7 +1,7 @@
 import jwt
 from src import app
 from flask import request, jsonify
-from .models import User, Expense, Category
+from .models import User, Expense, Category, Exchange
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from . import db, redis_client
@@ -21,7 +21,6 @@ def create_user():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-    print(data)
     if (
         User.query.filter_by(username=username).first()
         or User.query.filter_by(email=email).first()
@@ -45,11 +44,10 @@ def login_user():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
-
     user = User.query.filter_by(username=username).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"message": "Invalid username or password"}), 401
-    
+
     user_data = {
         "id": user.id,
         "username": user.username,
@@ -68,7 +66,12 @@ def login_user():
     redis_client.hmset(redis_key, redis_value)
     redis_client.expireat(redis_key, int(token_data["exp"].timestamp()))
 
-    return jsonify({"message": "Login successful", "token": token, "user_data": user_data}), 200
+    return (
+        jsonify(
+            {"message": "Login successful", "token": token, "user_data": user_data}
+        ),
+        200,
+    )
 
 
 @app.route(f"{BASE_URL}/expenses/<int:user_id>", methods=["GET"])
@@ -151,3 +154,42 @@ def get_categories():
     if categories:
         return jsonify([category.to_dict() for category in categories]), 200
     return jsonify({"message": "No categories found.", "status": 404}), 404
+
+
+@app.route(f"{BASE_URL}/exchange/<int:user_id>", methods=["GET"])
+@token_required
+def get_exchange(user_id):
+    exchange = Exchange.query.filter_by(user_id=user_id).all()
+
+    if exchange:
+        return jsonify([ex.to_dict() for ex in exchange]), 200
+    
+    return jsonify({"message": "No exchange found.", "status": 404}), 404
+
+@app.route(f"{BASE_URL}/exchange/create/<int:user_id>", methods=["POST"])
+@token_required
+def create_exchange(user_id):
+    data = request.get_json()
+    new_exchange = Exchange(
+        user_id=user_id,
+        date=data.get("date"),
+        currency=data.get("currency"),
+        amount=data.get("amount"),
+        exchange_rate=data.get("exchange_rate"),
+        total_price_brl=data.get("total_price_brl"),
+        quote=data.get("quote"),
+        location=data.get("location"),
+        additional_fees=data.get("additional_fees"),
+        observation=data.get("observation"),
+    )
+    db.session.add(new_exchange)
+    db.session.commit()
+    return (
+        jsonify(
+            {
+                "message": "Exchange created successfully",
+                "exchange": new_exchange.to_dict(),
+            }
+        ),
+        201,
+    )
