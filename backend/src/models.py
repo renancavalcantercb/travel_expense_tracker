@@ -60,9 +60,9 @@ class Exchange(db.Model):
     exchange_rate = db.Column(db.Float, nullable=False)
     total_price_brl = db.Column(db.Float, nullable=False)
     quote = db.Column(db.Float, nullable=False)
-    location = db.column(db.String(50), nullable=False)
-    additional_fees = db.column(db.Float, nullable=False)
-    observation = db.column(db.String(200), nullable=False)
+    location = db.Column(db.String(50), nullable=False)
+    additional_fees = db.Column(db.Float, nullable=False)
+    observation = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
         return f"<Exchange {self.id}>"
