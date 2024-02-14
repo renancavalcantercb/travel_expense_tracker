@@ -59,7 +59,7 @@ class Exchange(db.Model):
     amount = db.Column(db.Float, nullable=False)
     exchange_rate = db.Column(db.Float, nullable=False)
     total_price_brl = db.Column(db.Float, nullable=False)
-    quote = db.column(db.Float, nullable=False)
+    quote = db.Column(db.Float, nullable=False)
     location = db.column(db.String(50), nullable=False)
     additional_fees = db.column(db.Float, nullable=False)
     observation = db.column(db.String(200), nullable=False)
