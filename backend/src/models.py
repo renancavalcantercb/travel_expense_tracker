@@ -51,5 +51,37 @@ class Category(db.Model):
         return {"id": self.id, "name": self.name}
 
 
+class Exchange(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    currency = db.Column(db.String(3), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    exchange_rate = db.Column(db.Float, nullable=False)
+    total_price_brl = db.Column(db.Float, nullable=False)
+    quote = db.column(db.Float, nullable=False)
+    location = db.column(db.String(50), nullable=False)
+    additional_fees = db.column(db.Float, nullable=False)
+    observation = db.column(db.String(200), nullable=False)
+
+    def __repr__(self):
+        return f"<Exchange {self.id}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "date": self.date,
+            "currency": self.currency,
+            "amount": self.amount,
+            "exchange_rate": self.exchange_rate,
+            "total_price_brl": self.total_price_brl,
+            "quote": self.quote,
+            "location": self.location,
+            "additional_fees": self.additional_fees,
+            "observation": self.observation,
+        }
+
+
 with app.app_context():
     db.create_all()
