@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Register from './components/registerForm';
 import LoginForm from './components/loginForm';
 import ExpensesTable from './components/ExpensesTable';
 import Navbar from './components/NavBar';
@@ -20,6 +21,7 @@ function App() {
 
           <Routes>
             <Route path="/" element={<ExpensesTable />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/expenses" element={<ExpensesTable />} />
           </Routes>
